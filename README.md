@@ -4,6 +4,20 @@ An end-to-end engine for writing thesis-style documents in Claude Code. Built-in
 
 ---
 
+## Read this first — to actually get a good thesis from this engine
+
+Four things determine whether the engine produces a high-quality thesis or a mediocre one. Worth ~2 minutes to read before you start:
+
+1. **Alignment is non-negotiable.** If you rush `/align` or fill `QUESTIONNAIRE.md` with vague answers, everything downstream is degraded. The 15–25 minutes you spend there is the highest-leverage time in the whole project. Treat it as the foundation, not a checkbox.
+
+2. **Engage actively. This is a collaborator, not a ghostwriter.** Read every output. Push back when something doesn't fit your project. The engine produces drafts; you make them yours through revision and approval. If you click "Approved" without reading, you'll get a thesis-shaped document that doesn't actually argue what you mean.
+
+3. **You author every paragraph.** Meta-Rule Zero: when AI-detection flags content, the engine REFUSES to rewrite it for you. You rewrite. Why: AI rewriting AI-flagged text empirically makes detection WORSE (77% → 100% tested). You cannot outsource your voice.
+
+4. **Bring evidence.** The engine builds quality FROM what you provide — reference theses, sample papers, your actual research data. Without these, alignment is degraded; without alignment, everything else is degraded. The engine cannot manufacture rigor from nothing.
+
+---
+
 ## WHY this exists
 
 Thesis writers face a new constraint: schools deploy AI-detection (Turnitin AI, GPTZero) with strict thresholds. Generic AI tools — "write my literature review" — produce text that gets flagged and bounced. The conventional response is to ask AI to rewrite the flagged passages, which empirically makes detection **worse**: tested rewrite cycles take detection from 77% → 100%.
