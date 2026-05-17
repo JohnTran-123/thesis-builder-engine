@@ -18,6 +18,12 @@ Four things determine whether the engine produces a high-quality thesis or a med
 
 ---
 
+## Track record
+
+This engine was iterated while the developer wrote his own thesis. The full workflow — from alignment through submission — was tested in production, and the resulting thesis received positive results under the institution's AI-detection threshold and review standards. The engine that ships here is the same one that produced that thesis, generalized to remove institution-specific content.
+
+---
+
 ## WHY this exists
 
 Thesis writers face a new constraint: schools deploy AI-detection (Turnitin AI, GPTZero) with strict thresholds. Generic AI tools — "write my literature review" — produce text that gets flagged and bounced. The conventional response is to ask AI to rewrite the flagged passages, which empirically makes detection **worse**: tested rewrite cycles take detection from 77% → 100%.
