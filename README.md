@@ -95,7 +95,20 @@ These bind every operation. They are not optional.
 
 ## SOP — Standard Operating Procedure
 
-For the step-by-step user walkthrough — including common situations like resuming after a break, integrating advisor feedback, recovering from a GPTZero flag, and revising your outline mid-project — read **`USER_GUIDE.md`**.
+Day-to-day, the engine works in a simple rhythm: you invoke a skill → engine produces output (a draft, a review report, an outline) → you read it → reply **"Approved"** or give feedback → move to the next task. Each thesis section typically takes 3–5 hours of work spread across drafting, content-review, AI-review, and author rewrite — but you only spend short focused sessions at a time, and the engine handles continuity.
+
+Multi-week or multi-month projects are explicitly supported. The engine writes session state to `workspace/_session.md` after every approval, so when you come back tomorrow (or next month), it greets you with: *"Last action: drafted §1.2. Next step: run /content-review on §1.2. Resume?"* — and you're back in flow.
+
+The **`USER_GUIDE.md`** walks through:
+
+- **Step-by-step usage of each of the 6 phases** — what you do, what you'll see, what to reply at each gate
+- **Where your files live** — workspace folders explained in plain language
+- **Common situations** — resuming after a break, integrating advisor feedback, recovering from a GPTZero flag, revising your outline mid-project, getting unstuck on a section
+- **Five "don'ts"** — the most common mistakes the engine guards against
+- **Tips** — small habits that significantly improve output quality
+- **What this engine doesn't do** — honest scope on the tool itself
+
+If you're new to the engine, read it after `README.md` and before you fill `QUESTIONNAIRE.md`. About 10 minutes to read end-to-end.
 
 For the 12-question intake form, see **`QUESTIONNAIRE.md`**.
 
