@@ -10,7 +10,7 @@ Four things determine whether the engine produces a high-quality thesis or a med
 
 1. **Alignment is non-negotiable.** If you rush `/align` or fill `QUESTIONNAIRE.md` with vague answers, everything downstream is degraded. The 15–25 minutes you spend there is the highest-leverage time in the whole project. Treat it as the foundation, not a checkbox.
 
-2. **Engage actively. This is a collaborator, not a ghostwriter.** Read every output. Push back when something doesn't fit your project. The engine produces drafts; you make them yours through revision and approval. If you click "Approved" without reading, you'll get a thesis-shaped document that doesn't actually argue what you mean.
+2. **Engage actively at every gate.** Yes, this engine ghostwrites — it drafts every section for you. That's the point. But ghostwriting only produces a good thesis if YOU read every output, push back on what doesn't fit, and rewrite every passage `/ai-review` flags (Meta-Rule Zero). Click "Approved" without reading and you'll ship a thesis-shaped document that doesn't actually argue what you mean. The engine drafts; the discipline makes the work yours.
 
 3. **You author every paragraph.** Meta-Rule Zero: when AI-detection flags content, the engine REFUSES to rewrite it for you. You rewrite. Why: AI rewriting AI-flagged text empirically makes detection WORSE (77% → 100% tested). You cannot outsource your voice.
 
