@@ -59,9 +59,11 @@ User invokes via `/<skill-name>` or natural language.
 
 ## AGENTS (spawn via Task tool)
 
-| **AGENT** | **PATH** | **PURPOSE** |
-| :-------- | :------- | :---------- |
-| Research Assistant | `agents/research-assistant.md` | Search, summarize, bibliography, literature-review drafts |
+| **AGENT** | **PATH** | **PURPOSE** | **SPAWNED BY** |
+| :-------- | :------- | :---------- | :------------- |
+| Research Assistant | `agents/research-assistant.md` | Search, summarize, bibliography, literature-review drafts | User request; `/plan` may suggest |
+| Content Reviewer | `agents/content-reviewer.md` | Content audit (argument quality, logic, structure, RQ alignment, honest scope) | `/content-review` skill |
+| AI-Detection Reviewer | `agents/ai-detection-reviewer.md` | AI-detection audit (5 principles + 29 patterns + 3 hard rules + voice gaps) | `/ai-review` skill |
 
 ---
 

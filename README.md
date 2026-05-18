@@ -176,7 +176,7 @@ For the 12-question intake form, see **`QUESTIONNAIRE.md`**.
 | Rules | 5 files in `rules/` | Always-loaded global constraints |
 | Skills | 6 in `skills/` + 2 alignment references | One procedure per workflow phase |
 | Protocols | 3 in `protocols/` | Long-form references loaded on demand |
-| Agents | 1 in `agents/` | Research-assistant (spawnable for literature work) |
+| Agents | 3 in `agents/` | Research-assistant (literature work), Content-Reviewer (audit, spawned by `/content-review`), AI-Detection Reviewer (audit, spawned by `/ai-review`) |
 | Tools | `tools/build_thesis.py` | Generic markdown-to-docx builder |
 
 23 engine files total. Workspace template gitignored.

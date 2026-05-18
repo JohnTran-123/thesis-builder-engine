@@ -1,12 +1,12 @@
-# AI-Review Skill — Diagnose AI-Detection Patterns
+# AI-Review Skill — Spawn AI-Detection Reviewer Agent
 
-**Purpose:** Audit drafted content against the anti-AI-detection protocol (5 principles + 29 patterns + 3 hard rules from `protocols/PROTOCOL_ANTI_AI.md`). **Does NOT rewrite** — diagnoses only.
+**Purpose:** User-facing trigger for AI-detection audit. The actual audit runs in an isolated agent (fresh context, isolated protocol load). This skill is the thin wrapper that spawns the agent and surfaces the result.
 
 **Trigger:** User invokes `/ai-review` (or "check for AI detection", "will this get flagged", "is this AI-coded"). Run AFTER `/content-review` is approved on the same section. **Content first, AI-detection second** — content issues bias AI-detection results.
 
-**Required upstream (per `rules/approval-discipline.md`):** The `[review]` (content) task for this section must be 🟢 in `workspace/plan/plan.md` §3 (i.e., `/content-review` has been run and findings resolved).
+**Required upstream (per `rules/approval-discipline.md`):** The `[review]` (content) task for this section must be 🟢 in `workspace/plan/plan.md` §3.
 
-**Output:** Diagnosis report presented in-conversation. **No file written.** Author rewrites flagged passages per voice-gap prompts; the `[review]` (ai) task gets marked 🟢 in `plan.md` §3 once findings are resolved. Re-running `/ai-review` produces fresh findings.
+**Output:** Diagnosis report presented in-conversation (the agent's structured findings). Voice-gap prompts directed at the author for rewrites. Approval state tracked in `plan.md` §3 (🟢 marker) once findings are addressed.
 
 ---
 
@@ -15,162 +15,84 @@
 ### Sub-step 0 — Pre-check
 
 Read:
-- `CLAUDE.md` and 5 rules
-- The target draft from `workspace/drafts/<section>.md`
-- The corresponding content-review report. **Verify it is approved before proceeding.**
-- `protocols/PROTOCOL_ANTI_AI.md` (loaded on demand — long-form reference)
-- `workspace/alignment/register.md` (the register baseline)
+- `CLAUDE.md` and all 5 rules
+- Identify the target section. If unspecified, ask the user.
+- Confirm the draft file exists at `workspace/drafts/<section>.md`.
+- Confirm the content-review task for this section is **🟢 in `plan.md` §3**.
 
-If content-review is missing or unapproved for this section, HARD STOP and direct user to `/content-review` first.
+**Artifact-state gating:** if content-review is missing or not 🟢, HARD STOP and direct user to `/content-review` first.
 
-### Sub-step 1 — Two-pass audit
+### Sub-step 1 — Spawn the AI-detection reviewer agent
 
-#### Pass 1 — Macro structure (paragraph-level)
+Invoke the Task tool with:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"AI-detection review §<section>"`
+- `prompt`: construct a brief by combining the content of `agents/ai-detection-reviewer.md` with these specific inputs:
+  - Target draft path: `workspace/drafts/<section>.md`
+  - Register baseline: `workspace/alignment/register.md`
+  - Protocol path: `protocols/PROTOCOL_ANTI_AI.md` (agent loads this — main session does NOT need to)
+  - Section identifier (e.g., "Ch1 §1.1")
+  - Confirmation that content-review for this section is 🟢
 
-For each paragraph in the draft, check against the 5 principles in `protocols/PROTOCOL_ANTI_AI.md`:
+The brief explicitly enforces **Meta-Rule Zero**: the agent must DIAGNOSE only and produce voice-gap PROMPTS, never rewritten text.
 
-1. **P1 — Anti-symmetry**: Do paragraphs have symmetric structure across the section (e.g., every paragraph starts "The Nth X is Y")? Flag templated patterns.
-2. **P2 — Variable abstraction**: Does the paragraph mix abstract claim with concrete example, or stay at one level? Flag monotonic altitude.
-3. **P3 — Transitional variety**: Are paragraph-to-paragraph transitions varied, or repetitive ("In addition," "Moreover," "Furthermore" stacked)?
-4. **P4 — Voice presence**: Does the author's voice appear at the appropriate frequency (per register baseline from `workspace/alignment/register.md`)? Flag voice gaps.
-5. **P5 — Register fidelity**: Does the paragraph match the register baseline? Flag drift toward polished native English (when ESL is the baseline).
+### Sub-step 2 — Surface the report
 
-#### Pass 2 — Micro patterns (sentence-level)
+The agent returns a structured report with macro/micro findings, voice-gap prompts, and predicted GPTZero risk band. Surface verbatim.
 
-For each sentence, check against the 29 patterns from `protocols/PROTOCOL_ANTI_AI.md`. Common offenders:
+Append this closing line:
 
-- "It is important to note that..." (epistemic prefix)
-- "In essence, ..." (sentence-initial reduction)
-- Parallel structures stacked
-- Definition-then-claim pattern
-- Em-dash chains
-- Hedging stacks ("may potentially possibly")
-- Tricolon ("X, Y, and Z" in three consecutive sentences)
-
-Flag any sentence triggering 2+ patterns.
-
-Apply the **3 hard rules** from the protocol:
-- **R1**: No "It is X to Y" formulations stacked
-- **R2**: No em-dash chains exceeding the protocol threshold
-- **R3**: ESL-natural constructions preserved where appropriate — do NOT smooth toward native-fluent
-
-### Sub-step 2 — Identify voice gaps
-
-A **voice gap** is a paragraph (or stretch) where the author's voice is absent but the register baseline expects it.
-
-For each gap, formulate a **voice-gap prompt** for the author. Example:
-
-> "[Paragraph 7] — your register baseline expects author observation at this point but the paragraph is purely theoretical. What moment during your engagement showed this dynamic? Write 1–2 sentences in your own words."
-
-Voice gaps are the AUTHOR's responsibility to fill, per `rules/meta-rule-zero.md`.
-
-### Sub-step 3 — Write diagnosis report
-
-Present the report to the user in this format (no file write — chat output only):
-
-```markdown
-# AI-Detection Review — <section name>
-
-**Date:** <date>
-**Draft reviewed:** `workspace/drafts/<section>.md`
-**Protocol:** `protocols/PROTOCOL_ANTI_AI.md` (5 principles + 29 patterns + 3 hard rules)
-**Register baseline:** `workspace/alignment/register.md`
-
-## SUMMARY
-
-- Macro findings: [N] paragraphs flagged
-- Micro findings: [M] sentences flagged
-- Hard-rule violations: [P]
-- Voice gaps identified: [G]
-- **Predicted GPTZero risk:** [HIGH / MEDIUM / LOW]
-- **Verdict:** [Author rewrite required / Acceptable / Run external check]
-
-## MACRO FINDINGS (paragraph-level)
-
-### Anti-symmetry triggers (P1)
-
-- **[Paragraph 3]** Templated opener "The third factor is..." repeats the same structure as ¶2 ("The second factor is...") and ¶5 ("The fifth factor is...").
-  - Voice-gap prompt: "How would you naturally introduce this factor? Try a question or context-anchored opener."
-
-### Variable abstraction (P2)
-
-- **[Paragraph 5]** Stays at abstract framework altitude for 6 sentences without a concrete example.
-  - Suggested direction: anchor one sentence with a specific instance.
-
-### Voice gaps (P4)
-
-- **[Paragraph 7]** No author observation despite practitioner-academic register baseline expecting it.
-  - Voice-gap prompt: "Did you observe this directly during your engagement? Describe the moment in 1–2 sentences."
-
-### Register drift (P5)
-
-- **[Paragraph 9]** Sentence-length variance drops to near-zero (all 18-word sentences). Baseline shows higher variance.
-  - Suggested direction: shorten one or two sentences to break monotony.
-
-## MICRO FINDINGS (sentence-level)
-
-### Patterns triggered
-
-- **[Sentence 12]** "It is essential to recognize that..." → Pattern 4 (epistemic prefix).
-  - Author rewrite needed.
-- **[Sentence 18]** Em-dash chain (3 em-dashes in one sentence) → Hard Rule R2.
-  - Author rewrite needed.
-- **[Sentence 24]** Tricolon "..., ..., and ..." with parallel grammatical structure → Pattern 11.
-  - Author rewrite needed.
-- ...
-
-## VOICE-GAP PROMPTS (for author rewrite)
-
-Per `rules/meta-rule-zero.md`, the author rewrites flagged content. Prompts:
-
-1. **[Paragraph 3]** "In your own words, how would you explain why this factor matters?"
-2. **[Paragraph 7]** "What moment during your engagement showed this dynamic?"
-3. **[Sentence 12]** "Drop the epistemic prefix — say the claim directly. How would you phrase it?"
-4. **[Sentence 18]** "Break this into 2 sentences. Where does the natural pause fall for you?"
-
-## EXTERNAL CHECK RECOMMENDATION
-
-This is a heuristic audit. **Run GPTZero (or equivalent) on the actual draft for the real score.** Capture result to `workspace/final/external-ai-<section>-<date>.md`.
-
-If external score exceeds the threshold from `workspace/alignment/constraints.md`, author rewrites flagged paragraphs and the cycle repeats. Per `rules/meta-rule-zero.md`, the AI does NOT loop the rewrite — the author does.
-```
-
-### Sub-step 4 — Present + hard-stop
-
-> "AI-detection review complete.
+> "AI-detection review complete. **[N] paragraph-level, [M] sentence-level, [P] hard-rule violations, [G] voice gaps.** Predicted risk: **[LOW / MEDIUM / HIGH / VERY HIGH]**.
 >
-> - **Findings:** [N] paragraph-level, [M] sentence-level, [P] hard-rule violations, [G] voice gaps
-> - **Predicted risk:** [HIGH/MEDIUM/LOW]
+> **Author's next step** (per `rules/meta-rule-zero.md`): rewrite flagged content using the voice-gap prompts. **Do NOT ask the engine to rewrite — empirically that makes detection worse.**
 >
-> **Author next step** (per `rules/meta-rule-zero.md`): rewrite flagged content using the voice-gap prompts. **Do NOT ask me to rewrite — empirically that makes detection worse.**
->
-> After your rewrite, re-run `/ai-review` OR run external GPTZero check and report the score back."
+> After your rewrite: re-run `/ai-review` on the revised draft OR run external GPTZero check and report the score back to me. When the section meets your threshold, I'll mark the ai-review task 🟢 in `plan.md` §3."
 
-HARD STOP.
+**HARD STOP.** Do not proceed or mark anything 🟢 without user confirmation.
+
+### Sub-step 3 — On user approval
+
+When the user confirms the section meets the AI-detection threshold (whether by passing internal review or by external GPTZero/Turnitin check):
+- Update `workspace/plan/plan.md` §3: mark the `[review]` (ai) task for this section as 🟢 Reviewed.
+- Update `workspace/_session.md` per `rules/approval-discipline.md` §4.
+- Suggest next step: continue to the next 🔴 task in current iteration. If iteration complete, present phase-transition gate.
 
 ---
 
-## RULES THAT APPLY (CRITICAL)
+## CRITICAL — META-RULE ZERO ENFORCEMENT
 
-- **Meta-Rule Zero** (`rules/meta-rule-zero.md`): AI does NOT rewrite AI-flagged content. Diagnose only. Author rewrites.
-- **Register fidelity** (`rules/register-fidelity.md`): stay in the baseline register.
-- **Approval discipline** (`rules/approval-discipline.md`): hard-stop after diagnosis.
+If the user asks the engine (main session OR via re-spawn of the agent) to rewrite flagged content, **REFUSE**. Cite `rules/meta-rule-zero.md`.
 
-**If the user asks the AI to rewrite a flagged passage:** REFUSE. Cite `rules/meta-rule-zero.md`. Offer 2–3 candidate phrasings for the AUTHOR to choose between; do NOT commit to a final version. The author picks; the AI does not.
+The engine MAY offer 2-3 candidate phrasings for the AUTHOR to choose between (this is "diagnose and propose options", not "commit a rewrite") — but the author picks; the engine does NOT commit to a final version.
+
+This applies whether running as skill or as agent.
 
 ---
 
-## SESSION CHECKPOINT
+## WHY THIS RUNS AS AN AGENT
 
-On report delivery:
-- Update `workspace/_session.md`:
-  - Last action: `/ai-review` on [section]
-  - Next step: author rewrites OR external GPTZero check OR mark approved and move on
+The audit runs in a separate Task-spawned context to:
+
+- Isolate the ~470-line `PROTOCOL_ANTI_AI.md` load from the main session (saves context for downstream work in the same session)
+- Avoid bias from the main session's drafting discussion
+- Match the audit-function semantic (one-shot input → structured report)
+
+The skill is the user-facing trigger; the agent is the worker.
+
+---
+
+## EDGE CASES
+
+- **External GPTZero score below threshold:** mark ai-review 🟢; proceed.
+- **External GPTZero score above threshold:** re-run `/ai-review` on rewritten draft. Author rewrites per voice-gap prompts; AI does NOT.
+- **User accepts debt without resolving findings:** allowed. Mark 🟢 with note in `plan.md`: "AI-review approved with [N] open findings — debt accepted."
+- **User asks for a rewrite:** REFUSE. Cite Meta-Rule Zero. Offer 2-3 candidate phrasings for user to pick from.
 
 ---
 
 **See also:**
-- `rules/meta-rule-zero.md` — the cardinal rule (cite often when refusing rewrites)
-- `protocols/PROTOCOL_ANTI_AI.md` — the 5 principles, 29 patterns, 3 hard rules
+- `agents/ai-detection-reviewer.md` — the agent prompt template this skill spawns
+- `rules/meta-rule-zero.md` — the cardinal rule (cite often)
+- `protocols/PROTOCOL_ANTI_AI.md` — 5 principles + 29 patterns + 3 hard rules (loaded by the agent, not by this skill)
 - `rules/register-fidelity.md` — register baseline reference
-- `skills/content-review/SKILL.md` — must run BEFORE this skill
+- `skills/content-review/SKILL.md` — MUST run BEFORE this skill
